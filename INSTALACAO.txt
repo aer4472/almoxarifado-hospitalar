@@ -1,0 +1,112 @@
+=====================================================
+  ALMOXARIFADO HOSPITALAR V4.0 - GUIA DE INSTALACAO
+=====================================================
+
+INSTALACAO EM 3 PASSOS:
+-----------------------
+
+PASSO 1: INSTALAR DEPENDENCIAS
+   > Clique duas vezes em: INSTALAR_DEPENDENCIAS.bat
+   
+   OU digite no terminal:
+   > pip install -r requirements.txt
+
+PASSO 2: INICIALIZAR SISTEMA
+   > Clique duas vezes em: INICIAR_SISTEMA_COMPLETO.bat
+   
+   Isso vai criar:
+   - Banco de dados
+   - Usuario admin (admin/admin123)
+   - Configuracoes iniciais
+
+PASSO 3: INICIAR SERVIDOR
+   > cd backend
+   > python app.py
+   
+   Aguarde mensagem:
+   * Running on http://127.0.0.1:5000
+
+PASSO 4: ACESSAR NO NAVEGADOR
+   > http://localhost:5000
+   
+   Login: admin
+   Senha: admin123
+
+=====================================================
+
+PRIMEIRO USO:
+-------------
+
+1. Criar almoxarifado:
+   Cadastros > Almoxarifados > Novo Almoxarifado
+
+2. Criar usuario:
+   Gestao > Usuarios > Novo Usuario
+
+3. Cadastrar itens:
+   Cadastros > Itens > Novo Item
+
+4. Fazer movimentacoes:
+   Movimentacoes > Entrada/Saida
+
+5. Gerar relatorios:
+   Relatorios > Estoque > Gerar PDF
+
+=====================================================
+
+PERSONALIZACAO:
+--------------
+
+Logo do hospital:
+   Configuracoes > Sistema > URL do Logo
+   
+Nome do hospital:
+   Configuracoes > Sistema > Nome do Hospital
+
+Cores:
+   Configuracoes > Sistema > Cores Personalizadas
+
+=====================================================
+
+PROBLEMAS COMUNS:
+-----------------
+
+Erro: "ModuleNotFoundError"
+   > pip install -r requirements.txt
+
+Erro: "no such table: usuarios"
+   > INICIAR_SISTEMA_COMPLETO.bat
+
+Porta 5000 ja em uso:
+   > Feche outras janelas do terminal
+   > Ou mude porta em .env
+
+Senha incorreta:
+   > Login: admin
+   > Senha: admin123
+   > (Troque depois no sistema)
+
+=====================================================
+
+REQUISITOS:
+-----------
+
+- Python 3.8 ou superior
+- Windows, Linux ou Mac
+- Navegador: Chrome, Firefox ou Edge
+
+=====================================================
+
+SUPORTE:
+--------
+
+Documentacao completa: README.md
+Problemas? Verifique os logs em backend/
+
+=====================================================
+
+Desenvolvido com carinho para gestao hospitalar!
+
+Versao: 4.0
+Data: Fevereiro 2025
+=====================================================
