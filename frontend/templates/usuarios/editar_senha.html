@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Senha - {{ usuario.nome }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2><i class="bi bi-key-fill"></i> Editar Senha do Usuário</h2>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">{{ usuario.nome }}</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Usuário (login):</strong> {{ usuario.username }}</p>
+                    <p><strong>Nível de acesso:</strong> 
+                        {% if usuario.nivel_acesso == 'admin' %}
+                        <span class="badge bg-danger">ADMINISTRADOR</span>
+                        {% elif usuario.nivel_acesso == 'almoxarife' %}
+                        <span class="badge bg-warning">ALMOXARIFE</span>
+                        {% else %}
+                        <span class="badge bg-info">VISUALIZAÇÃO</span>
+                        {% endif %}
+                    </p>
+                    
+                    <hr>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Nova Senha</label>
+                            <input type="password" class="form-control" name="nova_senha" 
+                                   required minlength="4" autocomplete="new-password">
+                            <small class="text-muted">Mínimo 4 caracteres</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Confirmar Nova Senha</label>
+                            <input type="password" class="form-control" name="confirma_senha" 
+                                   required minlength="4" autocomplete="new-password">
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Atenção:</strong> O usuário precisará fazer login novamente com a nova senha.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('listar_usuarios') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-key"></i> Alterar Senha
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-shield-check"></i> Dicas de Segurança</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li>Use senhas com pelo menos 8 caracteres</li>
+                        <li>Combine letras, números e símbolos</li>
+                        <li>Não use informações pessoais óbvias</li>
+                        <li>Troque as senhas periodicamente</li>
+                        <li>Não compartilhe senhas com outras pessoas</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

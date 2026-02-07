@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Almoxarifados{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-building"></i> Almoxarifados</h2>
+            <p class="text-muted mb-0">Gerencie os diferentes locais do sistema</p>
+        </div>
+        {% if current_user.nivel_acesso in ['admin_geral', 'admin'] %}
+        <a href="{{ url_for('almoxarifados.novo') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Novo Almoxarifado
+        </a>
+        {% endif %}
+    </div>
+    
+    {% if almoxarifados %}
+    <div class="row">
+        {% for almox in almoxarifados %}
+        <div class="col-md-6 mb-3">
+            <div class="card {% if not almox.ativo %}border-danger{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                {{ almox.nome }}
+                                {% if almox.ativo %}
+                                <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inativo</span>
+                                {% endif %}
+                            </h5>
+                            {% if almox.descricao %}
+                            <p class="text-muted small mb-2">{{ almox.descricao }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <div class="row small">
+                        {% if almox.endereco %}
+                        <div class="col-12 mb-1">
+                            <i class="bi bi-geo-alt text-muted"></i>
+                            <strong>Endereço:</strong> {{ almox.endereco }}
+                        </div>
+                        {% endif %}
+                        
+                        {% if almox.responsavel %}
+                        <div class="col-md-6 mb-1">
+                            <i class="bi bi-person text-muted"></i>
+                            <strong>Responsável:</strong> {{ almox.responsavel }}
+                        </div>
+                        {% endif %}
+                        
+                        {% if almox.telefone %}
+                        <div class="col-md-6 mb-1">
+                            <i class="bi bi-telephone text-muted"></i>
+                            <strong>Telefone:</strong> {{ almox.telefone }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <div class="row small text-muted">
+                        <div class="col-md-4">
+                            <i class="bi bi-people-fill"></i> 
+                            {{ almox.usuarios|length }} usuário(s)
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-box-seam"></i> 
+                            {{ almox.itens|length }} item(ns)
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-calendar"></i> 
+                            {{ almox.data_criacao.strftime('%d/%m/%Y') }}
+                        </div>
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <div class="btn-group btn-group-sm w-100" role="group">
+                        <a href="{{ url_for('almoxarifados.editar', id=almox.id) }}" 
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        
+                        {% if current_user.nivel_acesso == 'admin_geral' %}
+                        <a href="{{ url_for('almoxarifados.ativar_desativar', id=almox.id) }}" 
+                           class="btn btn-outline-{% if almox.ativo %}warning{% else %}success{% endif %}"
+                           onclick="return confirm('Deseja {% if almox.ativo %}desativar{% else %}ativar{% endif %} este almoxarifado?')">
+                            <i class="bi bi-{% if almox.ativo %}dash-circle{% else %}check-circle{% endif %}"></i>
+                            {% if almox.ativo %}Desativar{% else %}Ativar{% endif %}
+                        </a>
+                        
+                        {% if not almox.usuarios and not almox.itens %}
+                        <a href="{{ url_for('almoxarifados.excluir', id=almox.id) }}" 
+                           class="btn btn-outline-danger"
+                           onclick="return confirm('Tem certeza que deseja excluir este almoxarifado?')">
+                            <i class="bi bi-trash"></i> Excluir
+                        </a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i>
+        <strong>Nenhum almoxarifado cadastrado.</strong>
+        {% if current_user.nivel_acesso == 'admin_geral' %}
+        <br>Clique em "Novo Almoxarifado" para começar.
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

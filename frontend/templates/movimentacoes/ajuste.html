@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Ajuste de Estoque - Almoxarifado{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-sliders text-warning"></i> Ajuste de Estoque</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('listar_movimentacoes') }}">Movimentações</a></li>
+                    <li class="breadcrumb-item active">Ajuste</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Ajuste Manual de Estoque (Inventário)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Atenção:</strong> Use esta função apenas para corrigir divergências encontradas em inventários físicos.
+                    </div>
+                    
+                    <form method="POST" id="formAjuste">
+                        <div class="mb-3">
+                            <label for="item_id" class="form-label">Item *</label>
+                            <select class="form-select" id="item_id" name="item_id" required onchange="carregarInfoItem()">
+                                <option value="">Selecione um item...</option>
+                                {% for item in itens %}
+                                <option value="{{ item.id }}" 
+                                        data-estoque="{{ item.estoque_atual }}" 
+                                        data-unidade="{{ item.unidade_medida }}">
+                                    {{ item.codigo_barras }} - {{ item.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Estoque Atual no Sistema</label>
+                                <input type="text" class="form-control" id="estoque_sistema" readonly>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="nova_quantidade" class="form-label">Quantidade Contada (Real) *</label>
+                                <input type="number" step="0.01" class="form-control" id="nova_quantidade" 
+                                       name="nova_quantidade" min="0" required>
+                                <small class="form-text text-muted" id="unidadeMedida"></small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="observacao" class="form-label">Motivo do Ajuste *</label>
+                            <textarea class="form-control" id="observacao" name="observacao" rows="3" 
+                                      placeholder="Ex: Inventário físico mensal, divergência encontrada..." required></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info" id="infoDiferenca" style="display: none;">
+                            <strong>Diferença:</strong> <span id="diferenca">-</span>
+                            <br>
+                            <span id="tipoAjuste"></span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('listar_movimentacoes') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle"></i> Confirmar Ajuste
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Quando usar</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small"><strong>Use ajuste de estoque para:</strong></p>
+                    <ul class="small">
+                        <li>Corrigir diferenças após inventário físico</li>
+                        <li>Ajustar perdas identificadas</li>
+                        <li>Corrigir erros de lançamento</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <p class="small text-danger mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Importante:</strong> Para movimentações normais, use as opções de Entrada e Saída.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let estoqueAtualGlobal = 0;
+
+function carregarInfoItem() {
+    const select = document.getElementById('item_id');
+    const option = select.options[select.selectedIndex];
+    
+    if (option.value) {
+        estoqueAtualGlobal = parseFloat(option.dataset.estoque);
+        const unidade = option.dataset.unidade;
+        
+        document.getElementById('estoque_sistema').value = estoqueAtualGlobal + ' ' + unidade;
+        document.getElementById('unidadeMedida').textContent = 'Unidade: ' + unidade;
+        
+        const qtdInput = document.getElementById('nova_quantidade');
+        qtdInput.addEventListener('input', function() {
+            calcularDiferenca(unidade);
+        });
+    }
+}
+
+function calcularDiferenca(unidade) {
+    const novaQtd = parseFloat(document.getElementById('nova_quantidade').value) || 0;
+    const diferenca = novaQtd - estoqueAtualGlobal;
+    
+    document.getElementById('diferenca').textContent = Math.abs(diferenca).toFixed(2) + ' ' + unidade;
+    
+    if (diferenca > 0) {
+        document.getElementById('tipoAjuste').innerHTML = 
+            '<span class="text-success"><i class="bi bi-arrow-up"></i> Aumento de estoque</span>';
+    } else if (diferenca < 0) {
+        document.getElementById('tipoAjuste').innerHTML = 
+            '<span class="text-danger"><i class="bi bi-arrow-down"></i> Redução de estoque</span>';
+    } else {
+        document.getElementById('tipoAjuste').innerHTML = 
+            '<span class="text-muted">Sem alteração</span>';
+    }
+    
+    document.getElementById('infoDiferenca').style.display = 'block';
+}
+</script>
+{% endblock %}

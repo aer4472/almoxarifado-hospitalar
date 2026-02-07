@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Buscar Itens{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-search"></i> Resultado da Busca</h2>
+            <p class="text-muted">Buscando por: <strong>"{{ termo }}"</strong></p>
+        </div>
+    </div>
+    
+    {% if itens %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Encontrados <strong>{{ itens|length }}</strong> itens
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Lote</th>
+                            <th>Categoria</th>
+                            <th>Estoque</th>
+                            <th>Validade</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in itens %}
+                        <tr>
+                            <td><strong>{{ item.codigo_barras }}</strong></td>
+                            <td>{{ item.nome }}</td>
+                            <td><span class="badge bg-secondary">{{ item.lote }}</span></td>
+                            <td>{{ item.categoria.nome if item.categoria else '-' }}</td>
+                            <td><strong>{{ item.estoque_atual }}</strong> {{ item.unidade_medida }}</td>
+                            <td>
+                                {% if item.data_validade %}
+                                    {{ item.data_validade.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.status_estoque == 'zerado' %}
+                                <span class="badge bg-danger">ZERADO</span>
+                                {% elif item.status_estoque == 'critico' %}
+                                <span class="badge bg-danger">CRÍTICO</span>
+                                {% elif item.status_estoque == 'baixo' %}
+                                <span class="badge bg-warning">BAIXO</span>
+                                {% else %}
+                                <span class="badge bg-success">OK</span>
+                                {% endif %}
+                                
+                                {% if item.status_validade == 'vencido' %}
+                                <span class="badge bg-danger">VENCIDO</span>
+                                {% elif item.status_validade == 'vence_em_breve' %}
+                                <span class="badge bg-warning">A VENCER</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        Nenhum item encontrado com o termo "<strong>{{ termo }}</strong>"
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5>Dicas de busca:</h5>
+            <ul>
+                <li>Verifique se o termo está correto</li>
+                <li>Tente buscar apenas parte do nome ou código</li>
+                <li>A busca funciona por: código, nome ou lote</li>
+                <li>Não é necessário digitar exatamente como cadastrado</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="mt-3">
+        <a href="{{ url_for('listar_itens') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar para Itens
+        </a>
+    </div>
+</div>
+{% endblock %}

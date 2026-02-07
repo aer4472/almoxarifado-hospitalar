@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if almoxarifado else 'Novo' }} Almoxarifado{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-building"></i>
+                        {% if almoxarifado %}
+                        Editar Almoxarifado
+                        {% else %}
+                        Novo Almoxarifado
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">
+                                Nome do Almoxarifado <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="nome" 
+                                   name="nome" 
+                                   value="{{ almoxarifado.nome if almoxarifado else '' }}"
+                                   placeholder="Ex: Almoxarifado Central"
+                                   required>
+                            <small class="text-muted">Nome único para identificar o almoxarifado</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" 
+                                      id="descricao" 
+                                      name="descricao" 
+                                      rows="2"
+                                      placeholder="Ex: Almoxarifado principal, localizado no térreo">{{ almoxarifado.descricao if almoxarifado else '' }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="endereco" class="form-label">
+                                <i class="bi bi-geo-alt"></i> Endereço/Localização
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="endereco" 
+                                   name="endereco" 
+                                   value="{{ almoxarifado.endereco if almoxarifado else '' }}"
+                                   placeholder="Ex: Bloco A, 1º Andar, Sala 105">
+                            <small class="text-muted">Localização física do almoxarifado</small>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="responsavel" class="form-label">
+                                    <i class="bi bi-person"></i> Responsável
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="responsavel" 
+                                       name="responsavel" 
+                                       value="{{ almoxarifado.responsavel if almoxarifado else '' }}"
+                                       placeholder="Ex: João Silva">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="telefone" class="form-label">
+                                    <i class="bi bi-telephone"></i> Telefone
+                                </label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="telefone" 
+                                       name="telefone" 
+                                       value="{{ almoxarifado.telefone if almoxarifado else '' }}"
+                                       placeholder="(11) 99999-9999">
+                            </div>
+                        </div>
+                        
+                        {% if almoxarifado %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Informações:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>{{ almoxarifado.usuarios|length }} usuário(s) vinculado(s)</li>
+                                <li>{{ almoxarifado.itens|length }} item(ns) cadastrado(s)</li>
+                                <li>Criado em: {{ almoxarifado.data_criacao.strftime('%d/%m/%Y às %H:%M') }}</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('almoxarifados.listar') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if almoxarifado %}
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-shield-exclamation"></i> Zona de Perigo</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <p class="small mb-2">
+                                <strong>{% if almoxarifado.ativo %}Desativar{% else %}Ativar{% endif %} Almoxarifado</strong><br>
+                                <span class="text-muted">
+                                    {% if almoxarifado.ativo %}
+                                    Usuários não poderão mais acessar este almoxarifado.
+                                    {% else %}
+                                    Reativar acesso ao almoxarifado.
+                                    {% endif %}
+                                </span>
+                            </p>
+                            {% if current_user.nivel_acesso == 'admin_geral' %}
+                            <a href="{{ url_for('almoxarifados.ativar_desativar', id=almoxarifado.id) }}" 
+                               class="btn btn-warning btn-sm"
+                               onclick="return confirm('Confirma {% if almoxarifado.ativo %}desativação{% else %}ativação{% endif %}?')">
+                                <i class="bi bi-{% if almoxarifado.ativo %}dash-circle{% else %}check-circle{% endif %}"></i>
+                                {% if almoxarifado.ativo %}Desativar{% else %}Ativar{% endif %}
+                            </a>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <p class="small mb-2">
+                                <strong>Excluir Almoxarifado</strong><br>
+                                <span class="text-muted">
+                                    {% if almoxarifado.usuarios or almoxarifado.itens %}
+                                    Não é possível excluir (existem usuários ou itens vinculados).
+                                    {% else %}
+                                    Ação irreversível! Todos os dados serão perdidos.
+                                    {% endif %}
+                                </span>
+                            </p>
+                            {% if current_user.nivel_acesso == 'admin_geral' and not almoxarifado.usuarios and not almoxarifado.itens %}
+                            <a href="{{ url_for('almoxarifados.excluir', id=almoxarifado.id) }}" 
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('ATENÇÃO! Esta ação é IRREVERSÍVEL. Confirma exclusão?')">
+                                <i class="bi bi-trash"></i> Excluir Permanentemente
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

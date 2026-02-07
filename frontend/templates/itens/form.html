@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}{% if item %}Editar{% else %}Novo{% endif %} Item - Almoxarifado{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="bi bi-box-seam"></i> 
+                {% if item %}Editar Item{% else %}Novo Item{% endif %}
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('listar_itens') }}">Itens</a></li>
+                    <li class="breadcrumb-item active">{% if item %}Editar{% else %}Novo{% endif %}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="codigo_barras" class="form-label">Código de Barras *</label>
+                                <input type="text" class="form-control" id="codigo_barras" name="codigo_barras" 
+                                       value="{{ item.codigo_barras if item else '' }}" required>
+                                <small class="form-text text-muted">Código de barras do produto</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="almoxarifado_id" class="form-label">
+                                    Almoxarifado <span class="text-danger">*</span>
+                                </label>
+                                {% if current_user.ve_todos_almoxarifados %}
+                                    <!-- Admin geral e admin central: podem escolher -->
+                                    <select class="form-select" id="almoxarifado_id" name="almoxarifado_id" required>
+                                        <option value="">Selecione...</option>
+                                        {% for almox in almoxarifados %}
+                                        <option value="{{ almox.id }}" 
+                                                {% if item and item.almoxarifado_id == almox.id %}selected{% endif %}>
+                                            {{ almox.nome }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="form-text text-muted">Selecione o almoxarifado</small>
+                                {% else %}
+                                    <!-- Admin local e colaborador: campo fixo -->
+                                    <input type="text" class="form-control" 
+                                           value="{{ current_user.almoxarifado.nome }}" 
+                                           readonly>
+                                    <input type="hidden" name="almoxarifado_id" value="{{ current_user.almoxarifado_id }}">
+                                    <small class="form-text text-muted">Almoxarifado vinculado automaticamente</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="unidade_medida" class="form-label">Unidade de Medida *</label>
+                                <select class="form-select" id="unidade_medida" name="unidade_medida" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="UN" {% if item and item.unidade_medida == 'UN' %}selected{% endif %}>UN - Unidade</option>
+                                    <option value="CX" {% if item and item.unidade_medida == 'CX' %}selected{% endif %}>CX - Caixa</option>
+                                    <option value="PCT" {% if item and item.unidade_medida == 'PCT' %}selected{% endif %}>PCT - Pacote</option>
+                                    <option value="L" {% if item and item.unidade_medida == 'L' %}selected{% endif %}>L - Litro</option>
+                                    <option value="ML" {% if item and item.unidade_medida == 'ML' %}selected{% endif %}>ML - Mililitro</option>
+                                    <option value="KG" {% if item and item.unidade_medida == 'KG' %}selected{% endif %}>KG - Quilograma</option>
+                                    <option value="G" {% if item and item.unidade_medida == 'G' %}selected{% endif %}>G - Grama</option>
+                                    <option value="M" {% if item and item.unidade_medida == 'M' %}selected{% endif %}>M - Metro</option>
+                                    <option value="CM" {% if item and item.unidade_medida == 'CM' %}selected{% endif %}>CM - Centímetro</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome do Item *</label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   value="{{ item.nome if item else '' }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="marca" class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="marca" name="marca" 
+                                   value="{{ item.marca if item else '' }}" 
+                                   placeholder="Ex: Genérico, Novartis, etc.">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3">{{ item.descricao if item else '' }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="categoria_id" class="form-label">Categoria</label>
+                                <select class="form-select" id="categoria_id" name="categoria_id">
+                                    <option value="">Sem categoria</option>
+                                    {% for categoria in categorias %}
+                                    <option value="{{ categoria.id }}" 
+                                            {% if item and item.categoria_id == categoria.id %}selected{% endif %}>
+                                        {{ categoria.nome }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="estoque_minimo" class="form-label">Estoque Mínimo *</label>
+                                <input type="number" step="0.01" class="form-control" id="estoque_minimo" 
+                                       name="estoque_minimo" value="{{ item.estoque_minimo if item else 0 }}" required>
+                                <small class="form-text text-muted">Alerta quando atingir este valor</small>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="lote" class="form-label">Lote *</label>
+                                <input type="text" class="form-control" id="lote" name="lote" 
+                                       value="{{ item.lote if item else '' }}" required>
+                                <small class="form-text text-muted">Obrigatório</small>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="data_validade" class="form-label">Data de Validade</label>
+                                <input type="date" class="form-control" id="data_validade" name="data_validade" 
+                                       value="{{ item.data_validade.strftime('%Y-%m-%d') if item and item.data_validade else '' }}">
+                            </div>
+                        </div>
+                        
+                        {% if item %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Estoque Atual:</strong> {{ item.estoque_atual }} {{ item.unidade_medida }}
+                            <br>
+                            <small>Para alterar o estoque, utilize a opção de Entrada, Saída ou Ajuste no menu Movimentações.</small>
+                        </div>
+                        {% endif %}
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('listar_itens') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Informações</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Campos obrigatórios (*)</strong></p>
+                    <ul class="small">
+                        <li>Código do Item</li>
+                        <li>Nome do Item</li>
+                        <li>Unidade de Medida</li>
+                        <li>Estoque Mínimo</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <p class="small text-muted mb-0">
+                        <i class="bi bi-lightbulb"></i> 
+                        <strong>Dica:</strong> Escolha códigos únicos e fáceis de identificar, 
+                        como códigos de barras ou referências do fornecedor.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

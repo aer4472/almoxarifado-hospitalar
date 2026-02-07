@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações do Sistema{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2><i class="bi bi-gear-fill"></i> Configurações do Sistema</h2>
+    <p class="text-muted">Personalize a aparência e configurações gerais</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <h5 class="mb-3"><i class="bi bi-hospital"></i> Informações do Hospital</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nome do Hospital/Instituição</label>
+                            <input type="text" class="form-control" name="nome_hospital" 
+                                   value="{{ config.nome_hospital }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Logo do Sistema</label>
+                            {% if config.logo_url %}
+                            <div class="mb-2">
+                                <img src="{{ config.logo_url }}" alt="Logo atual" style="max-height: 100px;" class="img-thumbnail">
+                                <p class="small text-muted mb-0">Logo atual</p>
+                            </div>
+                            {% endif %}
+                            <input type="file" class="form-control" name="logo" accept="image/*">
+                            <small class="text-muted">Formatos: PNG, JPG, SVG ou GIF (máx: 5MB)</small>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="mb-3"><i class="bi bi-palette-fill"></i> Personalização Visual</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Cor Primária (Botões, Links)</label>
+                                <div class="input-group">
+                                    <input type="color" class="form-control form-control-color" 
+                                           name="cor_primaria" value="{{ config.cor_primaria or '#0d6efd' }}"
+                                           id="cor_primaria">
+                                    <input type="text" class="form-control" readonly 
+                                           value="{{ config.cor_primaria or '#0d6efd' }}"
+                                           id="cor_primaria_texto">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Cor Secundária (Títulos)</label>
+                                <div class="input-group">
+                                    <input type="color" class="form-control form-control-color" 
+                                           name="cor_secundaria" value="{{ config.cor_secundaria or '#6c757d' }}"
+                                           id="cor_secundaria">
+                                    <input type="text" class="form-control" readonly 
+                                           value="{{ config.cor_secundaria or '#6c757d' }}"
+                                           id="cor_secundaria_texto">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Cor de Fundo da Navbar</label>
+                                <div class="input-group">
+                                    <input type="color" class="form-control form-control-color" 
+                                           name="cor_navbar" value="{{ config.cor_navbar or '#212529' }}"
+                                           id="cor_navbar">
+                                    <input type="text" class="form-control" readonly 
+                                           value="{{ config.cor_navbar or '#212529' }}"
+                                           id="cor_navbar_texto">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Cor de Sucesso (Alertas)</label>
+                                <div class="input-group">
+                                    <input type="color" class="form-control form-control-color" 
+                                           name="cor_sucesso" value="{{ config.cor_sucesso or '#198754' }}"
+                                           id="cor_sucesso">
+                                    <input type="text" class="form-control" readonly 
+                                           value="{{ config.cor_sucesso or '#198754' }}"
+                                           id="cor_sucesso_texto">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tema Pré-definido</label>
+                            <select class="form-select" id="tema_preset">
+                                <option value="">Selecione um tema...</option>
+                                <option value="azul">Azul (Padrão)</option>
+                                <option value="verde">Verde Hospitalar</option>
+                                <option value="vermelho">Vermelho Urgência</option>
+                                <option value="roxo">Roxo Moderno</option>
+                                <option value="laranja">Laranja Vibrante</option>
+                            </select>
+                            <small class="text-muted">Escolha um tema pronto ou personalize manualmente</small>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="mb-3"><i class="bi bi-footer"></i> Rodapé</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Empresa/Desenvolvedor</label>
+                            <input type="text" class="form-control" name="rodape_empresa" 
+                                   value="{{ config.rodape_empresa }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Contato</label>
+                            <input type="text" class="form-control" name="rodape_contato" 
+                                   value="{{ config.rodape_contato or '' }}"
+                                   placeholder="(11) 99999-9999 | contato@exemplo.com">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Instagram (sem @)</label>
+                            <input type="text" class="form-control" name="rodape_instagram" 
+                                   value="{{ config.rodape_instagram or '' }}"
+                                   placeholder="eduardosolucoes">
+                            <small class="text-muted">Apenas o nome de usuário, sem @</small>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Salvar Configurações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-database"></i> Backup</h6>
+                </div>
+                <div class="card-body">
+                    {% if config.ultimo_backup %}
+                    <p class="small"><strong>Último backup:</strong><br>
+                    {{ config.ultimo_backup.strftime('%d/%m/%Y %H:%M') }}</p>
+                    {% else %}
+                    <p class="small text-muted">Nenhum backup realizado ainda.</p>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('novas_rotas.backup_manual') }}" class="btn btn-info btn-sm w-100">
+                        <i class="bi bi-download"></i> Fazer Backup Agora
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Ajuda</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small"><strong>Cores:</strong><br>
+                    As cores serão aplicadas ao sistema após salvar.</p>
+                    
+                    <p class="small"><strong>Logo:</strong><br>
+                    Use um link direto para a imagem (termina em .png, .jpg ou .svg).</p>
+                    
+                    <p class="small mb-0"><strong>Rodapé:</strong><br>
+                    As informações aparecerão em todas as páginas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sincronizar color picker com campo de texto
+document.querySelectorAll('input[type="color"]').forEach(input => {
+    const textInput = document.getElementById(input.id + '_texto');
+    
+    input.addEventListener('input', function() {
+        if (textInput) {
+            textInput.value = this.value;
+        }
+    });
+});
+
+// Temas pré-definidos
+const temas = {
+    azul: {
+        primaria: '#0d6efd',
+        secundaria: '#6c757d',
+        navbar: '#212529',
+        sucesso: '#198754'
+    },
+    verde: {
+        primaria: '#198754',
+        secundaria: '#20c997',
+        navbar: '#1a5234',
+        sucesso: '#28a745'
+    },
+    vermelho: {
+        primaria: '#dc3545',
+        secundaria: '#fd7e14',
+        navbar: '#8b0000',
+        sucesso: '#28a745'
+    },
+    roxo: {
+        primaria: '#6f42c1',
+        secundaria: '#d63384',
+        navbar: '#4a1a6e',
+        sucesso: '#198754'
+    },
+    laranja: {
+        primaria: '#fd7e14',
+        secundaria: '#ffc107',
+        navbar: '#d65d00',
+        sucesso: '#198754'
+    }
+};
+
+document.getElementById('tema_preset').addEventListener('change', function() {
+    const tema = temas[this.value];
+    
+    if (tema) {
+        // Aplicar cores do tema
+        document.getElementById('cor_primaria').value = tema.primaria;
+        document.getElementById('cor_primaria_texto').value = tema.primaria;
+        
+        document.getElementById('cor_secundaria').value = tema.secundaria;
+        document.getElementById('cor_secundaria_texto').value = tema.secundaria;
+        
+        document.getElementById('cor_navbar').value = tema.navbar;
+        document.getElementById('cor_navbar_texto').value = tema.navbar;
+        
+        document.getElementById('cor_sucesso').value = tema.sucesso;
+        document.getElementById('cor_sucesso_texto').value = tema.sucesso;
+        
+        // Alert
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+        alert.innerHTML = `
+            <i class="bi bi-check-circle"></i> Tema aplicado! Clique em "Salvar Configurações" para confirmar.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.card-body form').prepend(alert);
+        
+        setTimeout(() => alert.remove(), 3000);
+    }
+});
+</script>
+{% endblock %}

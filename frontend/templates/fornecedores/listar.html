@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8"><h2><i class="bi bi-truck"></i> Fornecedores</h2></div>
+        <div class="col-md-4 text-end">
+            {% if current_user.nivel_acesso == 'admin' %}
+            <a href="{{ url_for('novo_fornecedor') }}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Novo Fornecedor</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-light"><tr><th>Nome</th><th>CNPJ</th><th>Contato</th><th>Telefone</th></tr></thead>
+                <tbody>
+                    {% for f in fornecedores %}
+                    <tr><td><strong>{{ f.nome }}</strong></td><td>{{ f.cnpj or '-' }}</td><td>{{ f.contato or '-' }}</td><td>{{ f.telefone or '-' }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

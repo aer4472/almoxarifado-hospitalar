@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8"><h2><i class="bi bi-people"></i> Usuários do Sistema</h2></div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('novo_usuario') }}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Novo Usuário</a>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Usuário</th>
+                        <th>E-mail</th>
+                        <th>Nível de Acesso</th>
+                        <th>Almoxarifado</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr {% if not u.ativo %}class="table-secondary"{% endif %}>
+                        <td><strong>{{ u.nome }}</strong></td>
+                        <td>{{ u.username }}</td>
+                        <td>{{ u.email or '-' }}</td>
+                        <td>
+                            {% if u.nivel_acesso == 'admin_geral' %}
+                                <span class="badge bg-danger">SUPER ADMIN</span>
+                            {% elif u.nivel_acesso == 'admin' %}
+                                <span class="badge bg-danger">ADMIN CENTRAL</span>
+                            {% elif u.nivel_acesso == 'admin_local' %}
+                                <span class="badge bg-warning">ADMIN LOCAL</span>
+                            {% elif u.nivel_acesso == 'almoxarife' %}
+                                <span class="badge bg-info">COLABORADOR</span>
+                            {% else %}
+                                <span class="badge bg-secondary">VISUALIZADOR</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.almoxarifado %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-building"></i> {{ u.almoxarifado.nome }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">Todos</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.ativo %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Bloqueado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('novas_rotas.editar_senha_usuario', id=u.id) }}" 
+                                   class="btn btn-warning" title="Editar Senha">
+                                    <i class="bi bi-key"></i>
+                                </a>
+                                
+                                <form method="POST" action="{{ url_for('novas_rotas.bloquear_usuario', id=u.id) }}" style="display: inline;">
+                                    {% if u.ativo %}
+                                    <button type="submit" class="btn btn-secondary" title="Bloquear Usuário"
+                                            onclick="return confirm('Bloquear usuário {{ u.nome }}?')">
+                                        <i class="bi bi-lock"></i>
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" class="btn btn-success" title="Desbloquear Usuário"
+                                            onclick="return confirm('Desbloquear usuário {{ u.nome }}?')">
+                                        <i class="bi bi-unlock"></i>
+                                    </button>
+                                    {% endif %}
+                                </form>
+                                
+                                <form method="POST" action="{{ url_for('novas_rotas.excluir_usuario', id=u.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger" title="Excluir Permanentemente"
+                                            onclick="return confirm('ATENÇÃO: Excluir permanentemente o usuário {{ u.nome }}? Esta ação não pode ser desfeita!')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios - Almoxarifado{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-file-earmark-text"></i> Relatórios</h2>
+            <p class="text-muted">Gerar relatórios em PDF</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-boxes"></i> Relatório de Estoque</h5>
+                </div>
+                <div class="card-body">
+                    <p>Gera relatório completo com todos os itens cadastrados, estoque atual, estoque mínimo e status.</p>
+                    <ul class="small">
+                        <li>Lista todos os itens ativos</li>
+                        <li>Mostra quantidade atual e mínima</li>
+                        <li>Identifica itens críticos</li>
+                    </ul>
+                    <a href="{{ url_for('relatorio_estoque_pdf') }}" class="btn btn-primary w-100" target="_blank">
+                        <i class="bi bi-file-pdf"></i> Gerar PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-arrow-left-right"></i> Relatório de Movimentações</h5>
+                </div>
+                <div class="card-body">
+                    <p>Gera relatório de todas as movimentações (entradas, saídas e ajustes).</p>
+                    
+                    <form method="GET" action="{{ url_for('relatorio_movimentacoes_pdf') }}" target="_blank">
+                        <div class="mb-3">
+                            <label class="form-label small">Data Início (opcional)</label>
+                            <input type="date" class="form-control" name="data_inicio">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Data Fim (opcional)</label>
+                            <input type="date" class="form-control" name="data_fim">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-file-pdf"></i> Gerar PDF
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Informações</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0 small text-muted">
+                        Os relatórios são gerados em formato PDF e podem ser salvos ou impressos diretamente.
+                        Para filtrar movimentações por período, preencha as datas de início e fim no relatório de movimentações.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

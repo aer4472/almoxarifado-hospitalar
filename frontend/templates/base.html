@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ config_sistema.nome_hospital or 'Almoxarifado Hospitalar' }}{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Cores personalizadas -->
+    <style>
+        :root {
+            --primary-color: {{ config_sistema.cor_primaria or '#0d6efd' }};
+            --secondary-color: {{ config_sistema.cor_secundaria or '#6c757d' }};
+            --navbar-color: {{ config_sistema.cor_navbar or '#212529' }};
+            --success-color: {{ config_sistema.cor_sucesso or '#198754' }};
+        }
+        
+        /* Cor primária - Botões, Links, Badges */
+        .bg-primary { background-color: var(--primary-color) !important; }
+        .btn-primary { 
+            background-color: var(--primary-color); 
+            border-color: var(--primary-color); 
+        }
+        .btn-primary:hover, .btn-primary:focus { 
+            background-color: var(--primary-color); 
+            opacity: 0.85; 
+            border-color: var(--primary-color);
+        }
+        .text-primary { color: var(--primary-color) !important; }
+        .border-primary { border-color: var(--primary-color) !important; }
+        .badge.bg-primary { background-color: var(--primary-color) !important; }
+        a { color: var(--primary-color); }
+        a:hover { color: var(--primary-color); opacity: 0.8; }
+        
+        /* Navbar personalizada */
+        .navbar { 
+            background-color: var(--navbar-color) !important; 
+        }
+        
+        /* Cor secundária - Cards, Títulos */
+        .bg-secondary { background-color: var(--secondary-color) !important; }
+        .text-secondary { color: var(--secondary-color) !important; }
+        .card-header.bg-light { 
+            background-color: var(--secondary-color) !important;
+            color: white !important;
+        }
+        
+        /* Cor de sucesso - Alertas, Badges */
+        .bg-success { background-color: var(--success-color) !important; }
+        .btn-success { 
+            background-color: var(--success-color); 
+            border-color: var(--success-color); 
+        }
+        .btn-success:hover, .btn-success:focus { 
+            background-color: var(--success-color); 
+            opacity: 0.85; 
+        }
+        .alert-success { 
+            background-color: var(--success-color); 
+            border-color: var(--success-color);
+            color: white;
+        }
+        .badge.bg-success { background-color: var(--success-color) !important; }
+        .text-success { color: var(--success-color) !important; }
+        
+        /* Forms */
+        .form-control:focus, .form-select:focus { 
+            border-color: var(--primary-color); 
+            box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb), 0.25);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                {% if config_sistema.logo_url %}
+                    <img src="{{ config_sistema.logo_url }}" alt="{{ config_sistema.nome_hospital }}" 
+                         style="height: 40px; margin-right: 10px;" class="d-inline-block align-top">
+                {% else %}
+                    <i class="bi bi-hospital"></i>
+                {% endif %}
+                {{ config_sistema.nome_hospital or 'Almoxarifado Hospitalar' }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-box-seam"></i> Itens
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('listar_itens') }}">Listar Itens</a></li>
+                            {% if current_user.nivel_acesso in ['admin_geral', 'admin', 'almoxarife'] %}
+                            <li><a class="dropdown-item" href="{{ url_for('novo_item') }}">Novo Item</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-arrow-left-right"></i> Movimentações
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('listar_movimentacoes') }}">Histórico</a></li>
+                            {% if current_user.nivel_acesso in ['admin_geral', 'admin', 'almoxarife'] %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('entrada_material') }}">
+                                <i class="bi bi-arrow-down-circle text-success"></i> Entrada
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('saida_material') }}">
+                                <i class="bi bi-arrow-up-circle text-danger"></i> Saída
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('ajuste_estoque') }}">
+                                <i class="bi bi-sliders text-warning"></i> Ajuste
+                            </a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear"></i> Cadastros
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('listar_setores') }}">
+                                <i class="bi bi-shop"></i> Setores
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('listar_categorias') }}">
+                                <i class="bi bi-tags"></i> Categorias
+                            </a></li>
+                            {% if current_user.nivel_acesso in ['admin_geral', 'admin'] %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('almoxarifados.listar') }}">
+                                <i class="bi bi-building"></i> Almoxarifados
+                            </a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('relatorios') }}">
+                            <i class="bi bi-file-earmark-text"></i> Relatórios
+                        </a>
+                    </li>
+                    
+                    {% if current_user.nivel_acesso in ['admin_geral', 'admin'] %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-people"></i> Gestão
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('listar_usuarios') }}">
+                                <i class="bi bi-person-badge"></i> Usuários
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('novas_rotas.configuracoes') }}">
+                                <i class="bi bi-sliders"></i> Configurações
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ current_user.nome }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><span class="dropdown-item-text"><small>Nível: {{ current_user.nivel_acesso }}</small></span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right"></i> Sair
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+    
+    <!-- Mensagens Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Conteúdo Principal -->
+    <main class="{% if current_user.is_authenticated %}container-fluid{% endif %} my-4">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 bg-light border-top">
+        <div class="container text-center">
+            <p class="mb-1">
+                <strong>{{ config_sistema.nome_hospital or 'Almoxarifado Hospitalar' }}</strong> - 
+                {{ config_sistema.rodape_empresa or 'Sistema de Gestão' }}
+            </p>
+            {% if config_sistema.rodape_contato %}
+            <p class="mb-1 small text-muted">
+                <i class="bi bi-telephone"></i> {{ config_sistema.rodape_contato }}
+            </p>
+            {% endif %}
+            {% if config_sistema.rodape_instagram %}
+            <p class="mb-2">
+                <a href="https://instagram.com/{{ config_sistema.rodape_instagram }}" 
+                   target="_blank" class="text-decoration-none">
+                    <i class="bi bi-instagram"></i> @{{ config_sistema.rodape_instagram }}
+                </a>
+            </p>
+            {% endif %}
+            <p class="mb-0 small text-muted">
+                Todos os direitos reservados © 2025
+            </p>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Movimentações - Almoxarifado{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-arrow-left-right"></i> Histórico de Movimentações</h2>
+            <p class="text-muted">Todas as entradas, saídas e ajustes de estoque</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if current_user.nivel_acesso in ['admin', 'almoxarife'] %}
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('entrada_material') }}" class="btn btn-success btn-sm">
+                    <i class="bi bi-arrow-down-circle"></i> Entrada
+                </a>
+                <a href="{{ url_for('saida_material') }}" class="btn btn-danger btn-sm">
+                    <i class="bi bi-arrow-up-circle"></i> Saída
+                </a>
+                <a href="{{ url_for('ajuste_estoque') }}" class="btn btn-warning btn-sm">
+                    <i class="bi bi-sliders"></i> Ajuste
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Filtro de Almoxarifado (apenas para admins) -->
+    {% if current_user.ve_todos_almoxarifados %}
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('listar_movimentacoes') }}" class="row align-items-end">
+                <div class="col-md-4">
+                    <label for="almoxarifado_filtro" class="form-label">
+                        <i class="bi bi-filter"></i> Filtrar por Almoxarifado
+                    </label>
+                    <select name="almoxarifado_id" id="almoxarifado_filtro" class="form-select" onchange="this.form.submit()">
+                        <option value="">📊 Todos os Almoxarifados</option>
+                        {% for almox in almoxarifados %}
+                        <option value="{{ almox.id }}" {% if almoxarifado_selecionado == almox.id|string %}selected{% endif %}>
+                            {{ almox.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% if almoxarifado_selecionado %}
+                <div class="col-md-2">
+                    <a href="{{ url_for('listar_movimentacoes') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Limpar Filtro
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Tipo</th>
+                            <th>Item</th>
+                            <th>Quantidade</th>
+                            <th>Setor</th>
+                            <th>Usuário</th>
+                            <th>Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mov in movimentacoes.items %}
+                        <tr>
+                            <td><small>{{ mov.data_hora.strftime('%d/%m/%Y %H:%M') }}</small></td>
+                            <td>
+                                {% if mov.tipo == 'entrada' %}
+                                <span class="badge bg-success"><i class="bi bi-arrow-down-circle"></i> ENTRADA</span>
+                                {% elif mov.tipo == 'saida' %}
+                                <span class="badge bg-danger"><i class="bi bi-arrow-up-circle"></i> SAÍDA</span>
+                                {% else %}
+                                <span class="badge bg-warning"><i class="bi bi-sliders"></i> AJUSTE</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ mov.item.codigo_barras_barras }}</strong><br>
+                                <small class="text-muted">{{ mov.item.nome }}</small>
+                            </td>
+                            <td><strong>{{ mov.quantidade }}</strong> {{ mov.item.unidade_medida }}</td>
+                            <td>{{ mov.setor.nome if mov.setor else '-' }}</td>
+                            <td><small>{{ mov.usuario.nome }}</small></td>
+                            <td><small>{{ mov.observacao if mov.observacao else '-' }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginação -->
+            {% if movimentacoes.pages > 1 %}
+            <nav aria-label="Navegação de página">
+                <ul class="pagination justify-content-center">
+                    {% if movimentacoes.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('listar_movimentacoes', page=movimentacoes.prev_num) }}">Anterior</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in movimentacoes.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num == movimentacoes.page %}
+                            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                            {% else %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for('listar_movimentacoes', page=page_num) }}">{{ page_num }}</a></li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if movimentacoes.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('listar_movimentacoes', page=movimentacoes.next_num) }}">Próximo</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

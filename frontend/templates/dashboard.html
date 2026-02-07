@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Almoxarifado Hospitalar{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+            <p class="text-muted">Visão geral do almoxarifado</p>
+        </div>
+    </div>
+    
+    <!-- Cards de Indicadores -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total de Itens</h6>
+                            <h3 class="mb-0">{{ total_itens }}</h3>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-box-seam" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-warning shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Estoque Baixo</h6>
+                            <h3 class="mb-0 text-warning">{{ itens_baixo_estoque|length }}</h3>
+                        </div>
+                        <div class="text-warning">
+                            <i class="bi bi-exclamation-triangle" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                    {% if itens_baixo_estoque %}
+                    <a href="#estoque-baixo" class="btn btn-sm btn-outline-warning mt-2 w-100">
+                        Ver Detalhes
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-danger shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Itens Vencidos</h6>
+                            <h3 class="mb-0 text-danger">{{ itens_vencidos|length }}</h3>
+                        </div>
+                        <div class="text-danger">
+                            <i class="bi bi-x-circle" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                    {% if itens_vencidos %}
+                    <a href="#vencidos" class="btn btn-sm btn-outline-danger mt-2 w-100">
+                        Ver Detalhes
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-info shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">A Vencer (30 dias)</h6>
+                            <h3 class="mb-0 text-info">{{ itens_a_vencer|length }}</h3>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-clock-history" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                    {% if itens_a_vencer %}
+                    <a href="#a-vencer" class="btn btn-sm btn-outline-info mt-2 w-100">
+                        Ver Detalhes
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alertas -->
+    {% if itens_baixo_estoque %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning" id="estoque-baixo">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Itens Abaixo do Estoque Mínimo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nome</th>
+                                    <th>Estoque Atual</th>
+                                    <th>Estoque Mínimo</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in itens_baixo_estoque %}
+                                <tr>
+                                    <td>{{ item.codigo_barras }}</td>
+                                    <td>{{ item.nome }}</td>
+                                    <td>{{ item.estoque_atual }} {{ item.unidade_medida }}</td>
+                                    <td>{{ item.estoque_minimo }} {{ item.unidade_medida }}</td>
+                                    <td>
+                                        {% if item.estoque_atual == 0 %}
+                                        <span class="badge bg-danger">ZERADO</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">BAIXO</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if itens_vencidos %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-danger" id="vencidos">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-x-circle"></i> Itens Vencidos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nome</th>
+                                    <th>Lote</th>
+                                    <th>Data de Validade</th>
+                                    <th>Estoque</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in itens_vencidos %}
+                                <tr>
+                                    <td>{{ item.codigo_barras }}</td>
+                                    <td>{{ item.nome }}</td>
+                                    <td>{{ item.lote or '-' }}</td>
+                                    <td>{{ item.data_validade.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ item.estoque_atual }} {{ item.unidade_medida }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if itens_a_vencer %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info" id="a-vencer">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Itens a Vencer nos Próximos 30 Dias</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nome</th>
+                                    <th>Lote</th>
+                                    <th>Data de Validade</th>
+                                    <th>Estoque</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in itens_a_vencer %}
+                                <tr>
+                                    <td>{{ item.codigo_barras }}</td>
+                                    <td>{{ item.nome }}</td>
+                                    <td>{{ item.lote or '-' }}</td>
+                                    <td>{{ item.data_validade.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ item.estoque_atual }} {{ item.unidade_medida }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Últimas Movimentações -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Últimas Movimentações</h5>
+                </div>
+                <div class="card-body">
+                    {% if ultimas_movimentacoes %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Item</th>
+                                    <th>Quantidade</th>
+                                    <th>Setor</th>
+                                    <th>Usuário</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mov in ultimas_movimentacoes %}
+                                <tr>
+                                    <td>{{ mov.data_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if mov.tipo == 'entrada' %}
+                                        <span class="badge bg-success">ENTRADA</span>
+                                        {% elif mov.tipo == 'saida' %}
+                                        <span class="badge bg-danger">SAÍDA</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">AJUSTE</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ mov.item.nome }}</td>
+                                    <td>{{ mov.quantidade }} {{ mov.item.unidade_medida }}</td>
+                                    <td>{{ mov.setor.nome if mov.setor else '-' }}</td>
+                                    <td>{{ mov.usuario.nome }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ url_for('listar_movimentacoes') }}" class="btn btn-sm btn-outline-primary">
+                            Ver Histórico Completo <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    {% else %}
+                    <p class="text-center text-muted mb-0">Nenhuma movimentação registrada ainda.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Setores - Almoxarifado{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-building"></i> Setores do Hospital</h2>
+            <p class="text-muted">Gerenciar setores para controle de saídas</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if current_user.nivel_acesso == 'admin' %}
+            <a href="{{ url_for('novo_setor') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Novo Setor
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Responsável</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for setor in setores %}
+                        <tr>
+                            <td><strong>{{ setor.nome }}</strong></td>
+                            <td>{{ setor.descricao or '-' }}</td>
+                            <td>{{ setor.responsavel or '-' }}</td>
+                            <td>
+                                {% if current_user.nivel_acesso == 'admin' %}
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('editar_setor', id=setor.id) }}" class="btn btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('excluir_setor', id=setor.id) }}" 
+                                          onsubmit="return confirm('Confirma a exclusão?')" style="display: inline;">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

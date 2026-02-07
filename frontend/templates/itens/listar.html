@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Itens - Almoxarifado Hospitalar{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-box-seam"></i> Gerenciar Itens</h2>
+            <p class="text-muted">Lista de todos os itens cadastrados no almoxarifado</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if current_user.nivel_acesso in ['admin', 'almoxarife'] %}
+            <a href="{{ url_for('novo_item') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Novo Item
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Filtro de Almoxarifado (apenas para admins) -->
+    {% if current_user.ve_todos_almoxarifados %}
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('listar_itens') }}" class="row align-items-end">
+                <div class="col-md-4">
+                    <label for="almoxarifado_filtro" class="form-label">
+                        <i class="bi bi-filter"></i> Filtrar por Almoxarifado
+                    </label>
+                    <select name="almoxarifado_id" id="almoxarifado_filtro" class="form-select" onchange="this.form.submit()">
+                        <option value="">📊 Todos os Almoxarifados</option>
+                        {% for almox in almoxarifados %}
+                        <option value="{{ almox.id }}" {% if almoxarifado_selecionado == almox.id|string %}selected{% endif %}>
+                            {{ almox.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% if almoxarifado_selecionado %}
+                <div class="col-md-2">
+                    <a href="{{ url_for('listar_itens') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Limpar Filtro
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tabelaItens">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código de Barras</th>
+                            <th>Nome</th>
+                            <th>Marca</th>
+                            <th>Lote</th>
+                            <th>Categoria</th>
+                            <th>Estoque Atual</th>
+                            <th>Validade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in itens %}
+                        <tr>
+                            <td><strong>{{ item.codigo_barras }}</strong></td>
+                            <td>{{ item.nome }}</td>
+                            <td>{{ item.marca or '-' }}</td>
+                            <td><span class="badge bg-secondary">{{ item.lote }}</span></td>
+                            <td>{{ item.categoria.nome if item.categoria else '-' }}</td>
+                            <td>
+                                <strong>{{ item.estoque_atual }}</strong> {{ item.unidade_medida }}
+                            </td>
+                            <td>
+                                {% if item.data_validade %}
+                                    {{ item.data_validade.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.status_estoque == 'zerado' %}
+                                <span class="badge bg-danger">ZERADO</span>
+                                {% elif item.status_estoque == 'critico' %}
+                                <span class="badge bg-danger">CRÍTICO</span>
+                                {% elif item.status_estoque == 'baixo' %}
+                                <span class="badge bg-warning">BAIXO</span>
+                                {% else %}
+                                <span class="badge bg-success">OK</span>
+                                {% endif %}
+                                
+                                {% if item.status_validade == 'vencido' %}
+                                <span class="badge bg-danger">VENCIDO</span>
+                                {% elif item.status_validade == 'vence_em_breve' %}
+                                <span class="badge bg-warning">A VENCER</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    {% if current_user.nivel_acesso in ['admin', 'almoxarife'] %}
+                                    <a href="{{ url_for('editar_item', id=item.id) }}" 
+                                       class="btn btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% endif %}
+                                    
+                                    {% if current_user.nivel_acesso == 'admin' %}
+                                    <button type="button" class="btn btn-outline-danger" 
+                                            onclick="confirmarExclusao('{{ item.id }}', '{{ item.nome }}')" 
+                                            title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalExclusao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o item <strong id="nomeItem"></strong>?</p>
+                <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" id="formExclusao">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmarExclusao(id, nome) {
+    document.getElementById('nomeItem').textContent = nome;
+    document.getElementById('formExclusao').action = '/itens/' + id + '/excluir';
+    
+    var modal = new bootstrap.Modal(document.getElementById('modalExclusao'));
+    modal.show();
+}
+
+// Adicionar filtro de busca na tabela
+document.addEventListener('DOMContentLoaded', function() {
+    // Implementação simples de busca
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'form-control mb-3';
+    searchInput.placeholder = 'Buscar item...';
+    
+    const table = document.getElementById('tabelaItens');
+    table.parentNode.insertBefore(searchInput, table);
+    
+    searchInput.addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        const rows = table.getElementsByTagName('tr');
+        
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        }
+    });
+});
+</script>
+{% endblock %}
